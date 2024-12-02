@@ -133,15 +133,19 @@ function createTimelineChart(data) {
     }
 
     // Create tooltip
-    const tooltip = d3.select('#timeline-chart')
+    const tooltip = d3.select('body')
         .append('div')
         .attr('class', 'tooltip')
         .style('opacity', 0)
-        .style('position', 'absolute')
-        .style('background-color', 'white')
-        .style('border', '1px solid #ddd')
-        .style('padding', '10px')
-        .style('pointer-events', 'none');
+        .style('position', 'fixed')
+        .style('background-color', 'rgba(25, 25, 40, 0.9)')
+        .style('color', '#fff')
+        .style('padding', '8px')
+        .style('border-radius', '4px')
+        .style('font-size', '12px')
+        .style('pointer-events', 'none')
+        .style('border', '1px solid #4CAF50')
+        .style('z-index', '9999');
 
     function updateChart() {
         const yearCounts = getFilteredData();
@@ -167,18 +171,30 @@ function createTimelineChart(data) {
             .append('circle')
             .attr('class', 'dot')
             .attr('r', 4)
-            .attr('fill', '#2c3e50')
+            .attr('fill', '#4CAF50')
+            .attr('stroke', '#fff')
+            .attr('stroke-width', 1)
+            .attr('opacity', 0.8)
             .attr('cx', d => x(d[0]))
             .attr('cy', d => y(d[1]))
             .on('mouseover', (event, d) => {
+                d3.select(event.currentTarget)
+                    .attr('r', 6)
+                    .attr('opacity', 1);
+                    
                 tooltip.transition()
                     .duration(200)
                     .style('opacity', .9);
+                    
                 tooltip.html(`Year: ${d[0]}<br/>Sightings: ${d[1]}`)
                     .style('left', (event.pageX + 10) + 'px')
                     .style('top', (event.pageY - 28) + 'px');
             })
-            .on('mouseout', () => {
+            .on('mouseout', (event) => {
+                d3.select(event.currentTarget)
+                    .attr('r', 4)
+                    .attr('opacity', 0.8);
+                    
                 tooltip.transition()
                     .duration(500)
                     .style('opacity', 0);
