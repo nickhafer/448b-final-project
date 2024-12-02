@@ -200,7 +200,7 @@ function createTimelineChart(data) {
         tooltip
           .html(`Year: ${d[0]}<br/>Sightings: ${d[1]}`)
           .style("left", event.pageX + 10 + "px")
-          .style("top", event.pageY - 28 + "px");
+          .style("top", event.pageY - 325 + "px");
       })
       .on("mouseout", (event) => {
         d3.select(event.currentTarget).attr("r", 4).attr("opacity", 0.8);
