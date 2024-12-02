@@ -1,105 +1,104 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>UFO Sightings Analysis</title>
-    
+
     <!-- D3.js -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
-    
+
     <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-    
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+    />
+
     <!-- MarkerCluster CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
-    
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css"
+    />
+
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-    
+
     <!-- Leaflet plugins - after Leaflet JS -->
     <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/leaflet.heat@0.2.0/dist/leaflet.heat.min.js"></script>
-    
-    <!-- Your styles -->
-    <link rel="stylesheet" href="styles.css">
-</head>
 
-<body>
+    <!-- Your styles -->
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+
+  <body>
     <div class="space-background">
-        <div class="stars-layer stars-1"></div>
-        <div class="stars-layer stars-2"></div>
-        <div class="stars-layer stars-3"></div>
-        
+      <div class="stars-layer stars-1"></div>
+      <div class="stars-layer stars-2"></div>
+      <div class="stars-layer stars-3"></div>
     </div>
     <header>
-        <h1>UFO Sightings</h1>
-        <p>Analyzing reported UFO sightings across time and space</p>
-        <p>By: Nick Hafer and Miranda Liu</p>
+      <h1>UFO Sightings</h1>
+      <p>Analyzing reported UFO sightings across time and space</p>
+      <p>By: Nick Hafer and Miranda Liu</p>
     </header>
 
     <main>
-        <section class="narrative-text">
-            Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard
-            dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen
-            book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially
-            unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more
-            recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
-        </section>
+      <section class="narrative-text">
+        For our final project, we examined a dataset of over 80,000 reported UFO
+        sightings from 1906 to 2014.
+      </section>
 
-        <section id="time-analysis">
-            <h2>UFO Sightings Over Time</h2>
-            <div id="timeline-chart"></div>
-        </section>
+      <section class="narrative-text">
+        First, we looked at different sightings over time.
+      </section>
 
-        <section class="narrative-text">
-            Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's
-            standard
-            dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type
-            specimen
-            book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially
-            unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and
-            more
-            recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
-        </section>
+      <section id="time-analysis">
+        <h2>UFO Sightings Over Time</h2>
+        <div id="timeline-chart"></div>
+      </section>
 
-        <section id="geo-analysis">
-            <h2>Geographical Distribution</h2>
-            <div id="map"></div>
-        </section>
+      <section class="narrative-text">
+        We looked at the geographic breakdown of UFO sightings.
+      </section>
 
-        <section class="narrative-text">
-            Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's
-            standard
-            dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type
-            specimen
-            book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially
-            unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and
-            more
-            recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
-        </section>
+      <section id="geo-analysis">
+        <h2>Geographical Distribution</h2>
+        <div id="map"></div>
+      </section>
 
-        <section id="shape-analysis">
-            <h2>UFO Shapes???</h2>
-            <div id="shape-chart"></div>
-        </section>
+      <section class="narrative-text">
+        We also examined different UFO shapes.
+      </section>
 
-        <section class="narrative-text">
-            Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's
-            standard
-            dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type
-            specimen
-            book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially
-            unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and
-            more
-            recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
-        </section>
+      <section id="shape-analysis">
+        <h2>UFO Shapes???</h2>
+        <div id="shape-chart"></div>
+      </section>
+
+      <section class="narrative-text">
+        Lorem Ipsum is simply dummy text of the printing and typesetting
+        industry. Lorem Ipsum has been the industry's standard dummy text ever
+        since the 1500s, when an unknown printer took a galley of type and
+        scrambled it to make a type specimen book. It has survived not only five
+        centuries, but also the leap into electronic typesetting, remaining
+        essentially unchanged. It was popularised in the 1960s with the release
+        of Letraset sheets containing Lorem Ipsum passages, and more recently
+        with desktop publishing software like Aldus PageMaker including versions
+        of Lorem Ipsum.
+      </section>
+
+      <section class="narrative-text">
+        Appendix <br />Dataset:
+        https://www.kaggle.com/datasets/willianoliveiragibin/ufo-sightings/data
+      </section>
     </main>
 
     <script src="script.js"></script>
     <script src="stars.js"></script>
-</body>
-
+  </body>
 </html>
