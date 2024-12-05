@@ -7,6 +7,8 @@ d3.csv("data/ufo-sightings-transformed.csv").then((data) => {
     d.longitude = +d.longitude;
     d.length_of_encounter_seconds = +d.length_of_encounter_seconds;
     d.hour = +d.hour;
+
+    d.day_of_week = getDayOfWeek(d.Date_time);
   });
 
   createTimelineChart(data);
@@ -14,6 +16,21 @@ d3.csv("data/ufo-sightings-transformed.csv").then((data) => {
   createHeatmap(data);
   //createShapeChart(data);
 });
+
+function getDayOfWeek(date) {
+  const daysOfWeek = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
+
+  const dayIndex = new Date(date).getDay(); // Returns 0 for Sunday, 1 for Monday, etc.
+  return daysOfWeek[dayIndex];
+}
 
 function createTimelineChart(data) {
   // Group data by year
