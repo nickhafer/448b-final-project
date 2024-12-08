@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>UFO Sightings Analysis</title>
+    <title>UFO SIGHTINGS</title>
 
     <!-- D3.js -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
@@ -42,51 +42,66 @@
       <div class="stars-layer stars-3"></div>
     </div>
     <header>
-      <h1>UFO Sightings</h1>
-      <p>Analyzing reported UFO sightings across time and space</p>
+      <h1>Where Can I See My First UFO?</h1>
+      <p>Analyzing reported UFO sightings across time and space to find where you're most likely to see your first unidentified flying object</p>
       <p>By: Nick Hafer and Miranda Liu</p>
     </header>
 
     <main>
+      <!-- introduction -->
       <section class="narrative-text">
-        For our final project, we examined a dataset of over 80,000 reported
-        Unidentified Flying Object (UFO) sightings from 1906 to 2014. We are
-        both interested in astronomy and thought it would be valuable to look
-        more in-depth into people's experiences with UFOs. Most existing
-        reporting and analysis of UFO sightings is localized to certain regions
-        or countries, but the dataset we examined is cross-national and
-        continental, albeit with most of the reported sightings in the United
-        States.
+        For centuries, the phenomenon of Unidentified Flying Object (UFO) sightings has captivated and intrigued people around
+        the world. From mysterious lights moving across the sky to inexplicable aerial phenomena, the allure of a potential
+        extraterrestrial encounter has led many fanatics to ask, “When and where is the next UFO going to show up?” We
+        understand our readers may not be UFO experts, so this question can be rephrased to, “When and where can I see my first
+        UFO?” Using this data, we hope to answer that question, and provide you with the time and place to see your first
+        extraterrestrial encounter.
+      </section>
+      <!-- dataset -->
+      <section class="narrative-text">
+        This dataset contains over 80,000 reported UFO sightings from 1906 to 2014. It’s cross-national and cross-continental,
+        allowing us to reveal trends that might exist outside of just the US, where most reporting occurs. For our readers in
+        other countries, our interactive visualizations will help you find the time and place for your first alien encounter.
+      </section>
+      <!-- geographic distribution -->
+      <section class="narrative-text">
+        We know that plane tickets can be prohibitively expensive unless bought well in advance, so the first item on our to-do
+        list is to find where you need to go. Below, we made this nifty geographic heat map that groups together UFO sightings
+        by location. Please poke around and explore sightings near you. Then zoom out a little, and identify where the most
+        sightings occur. If you’re in the US, you might want to look at southern California as a starting point. The density of
+        these sightings could be correlated with different factors such as population density, cultural interest in UFOs, and
+        the availability of reporting mechanisms. In particular, the United States stands out with the highest concentration of
+        sightings, potentially due to its rich history of UFO culture and higher levels of documentation.
       </section>
 
-      <section class="narrative-text">
-        First, we looked at the geographic breakdown of UFO sightings. We
-        thought this would be a good starting place to get a sense of where
-        these sightings are taking place and examine the data more closely.
-      </section>
       <section id="geo-analysis">
         <h2>Geographical Distribution</h2>
         <div id="map"></div>
       </section>
+      <!-- year to visit -->
       <section class="narrative-text">
-        Most of the reports are from the United States, with Europe in second
-        place. Of reports within the United States, most are on the East coast.
-        It was also cool to see that UFO sightings had been reported across all
-        continents - including Antarctica, in 1994!
-      </section>
-
-      <section class="narrative-text">
-        Examining the geographical data made us curious if there were any trends
-        or changes in ... over time.
+        Now that you know where to book your next flight, the next step is knowing when to book your flight. We understand that
+        not all of our readers have access to a time machine, but if you do, 2010 (for our US readers) is a good year to travel
+        back to. If you’re unfortunate enough to not have a time machine though, don’t fret, you’re still in good hands. Due to
+        increased public reporting and internet access to share those reports, there’ve been an increase in UFO sightings over
+        the past 30 years (see below). Other technological advancements have made it much easier to record sightings, like
+        cameras and smartphones. This means that traveling in the present day is totally fine, there are plenty of sightings to
+        go around. The rise in cultural and media fascination with UFOs over the years has also likely played a role in
+        increased reports.
       </section>
 
       <section id="time-analysis">
         <h2>UFO sightings over the last century</h2>
         <div id="timeline-chart"></div>
       </section>
-
+      <!-- day to visit -->
       <section class="narrative-text">
-        we also looked at the ufo sightings by time of day and day of week
+        Now that you know which year to book your flight, let’s explore what time of the week is best to get a good chance at
+        seeing your first UFO. Our data shows that Saturdays are at least 16% more likely to land you your first UFO sighting
+        than any other single day of the week. However, if we had to recommend a three day trip, you’d have your best luck with
+        Friday, Saturday, and Sunday. The skew in this data could likely be due to a reporting bias. People are more likely to
+        be engaged in outdoor and recreational activities on weekends. This gives them a better chance of being outside in order
+        to view the UFOs.
       </section>
 
       <section id="day-analysis">
@@ -94,20 +109,49 @@
         <div id="day-chart"></div>
       </section>
 
+      <!-- time of day to visit -->
+      <section class="narrative-text">
+        At this point, you should have booked your flights to allow you to be in prime UFO sighting location (ex: southern
+        california mountains) on a Saturday. So what time should you be looking up at the sky? Our data reveals a spike in UFO
+        sightings starting at 5pm, but really increases around 7pm, peaking at 9pm, and then dropping after midnight. This means
+        that to have the highest chance of spotting a UFO, you should be outside 7-11pm. However, this data also correlates with
+        when people are likely finished with dinner to when people usually go to bed. Additionally it’s easy to mistake a comet,
+        meteor, or satellite for something that is a UFO if you don’t know what you’re looking for. 
+      </section>
       <section id="time-analysis">
         <h2>UFO sightings by time of day</h2>
         <div id="time-chart"></div>
       </section>
 
+
+      <!-- heatmap of time of day/ day of week -->
+      <section class="narrative-text">
+        To optimize your UFO-spotting venture even further, our heat map combines data by the day of the week and time of day.
+        This shows, yet again, that Saturday nights are prime time for sightings, confirming that leisure time plus optimal
+        viewing conditions significantly affect the probability of spotting a UFO. We also want to make sure we have clear
+        skies, so which season is best?
+      </section>
+      <section id="miranda-analysis">
+        <h2>UFO heatmap</h2>
+        <div id="miranda-chart"></div>
+      </section>
+
+      <section class="narrative-text">
+        Well, when it comes to seasonal UFO sightings, it seems summer is the best, with autumn being the next runner up. Warmer
+        weather leads to more outdoor activities which means more people are looking up at the sky. Also, seasonal meteor
+        showers are more likely to occur in the summer than any other season, leading to a higher number of UFO reports. But
+        what about clearer skies? Apparently the clearest skies are in the winter, due to shorter daylight hours and the colder,
+        crisper air which eliminates haze and clouds in the night sky. Don’t worry though! It could be the case that aliens use
+        the clouds to hide better, which means maybe they visit us more in the summer, when they have better cloud cover.
+      </section>
+
+      <!-- season to visit -->
       <section id="season-analysis">
         <h2>UFO sightings by season</h2>
         <div id="season-chart"></div>
       </section>
 
-      <section id="miranda-analysis">
-        <h2>UFO heatmap</h2>
-        <div id="miranda-chart"></div>
-      </section>
+      
 
       <!-- <section class="narrative-text">
         We also examined different UFO shapes.
@@ -119,15 +163,17 @@
       </section> -->
 
       <section class="narrative-text">
-        Lorem Ipsum is simply dummy text of the printing and typesetting
-        industry. Lorem Ipsum has been the industry's standard dummy text ever
-        since the 1500s, when an unknown printer took a galley of type and
-        scrambled it to make a type specimen book. It has survived not only five
-        centuries, but also the leap into electronic typesetting, remaining
-        essentially unchanged. It was popularised in the 1960s with the release
-        of Letraset sheets containing Lorem Ipsum passages, and more recently
-        with desktop publishing software like Aldus PageMaker including versions
-        of Lorem Ipsum.
+        Beyond these primary insights, several additional factors could enhance your UFO-spotting experience. For instance,
+        staying informed about significant astronomical events, such as meteor showers, may help distinguish between natural
+        phenomena and potential UFOs. Moreover, being in a location with low light pollution can improve your chances of
+        witnessing something extraordinary in the night sky. For example, if you pick southern California, you might want to
+        stay away from Los Angeles.
+      </section>
+
+      <section class="narrative-text">
+        So, where can you see your first UFO? According to the data, your best bet is to find a hotspot in the United States or
+        Europe using our map (depending on where you live), plan your night watching for a Saturday evening during the summer
+        months, and ensure you are in an area with clear skies and minimal light pollution.
       </section>
 
       <section class="narrative-text">
