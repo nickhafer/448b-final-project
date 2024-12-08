@@ -41,7 +41,7 @@ function createTimelineChart(data) {
     (d) => d.Date_time.getFullYear()
   );
 
-  const margin = { top: 20, right: 20, bottom: 30, left: 40 };
+  const margin = { top: 20, right: 20, bottom: 50, left: 60 };
   const width =
     document.getElementById("timeline-chart").offsetWidth -
     margin.left -
@@ -246,6 +246,23 @@ function createTimelineChart(data) {
 
   svg.append("g").attr("class", "y-axis");
 
+  // Add X axis label
+  svg.append("text")
+    .attr("class", "x-label")
+    .attr("text-anchor", "middle")
+    .attr("x", width / 2)
+    .attr("y", height + margin.bottom - 10)
+    .text("Year");
+
+  // Add Y axis label
+  svg.append("text")
+    .attr("class", "y-label")
+    .attr("text-anchor", "middle")
+    .attr("transform", "rotate(-90)")
+    .attr("x", -height / 2)
+    .attr("y", -margin.left + 15)
+    .text("Number of Sightings");
+
   // Initial chart render
   updateChart();
 }
@@ -329,7 +346,7 @@ function createMap(data) {
 }
 
 function createHeatmap(data) {
-  const margin = { top: 20, right: 20, bottom: 30, left: 60 };
+  const margin = { top: 20, right: 20, bottom: 50, left: 60 };
   const width = document.getElementById("day-chart").offsetWidth - margin.left - margin.right;
   const height = 400 - margin.top - margin.bottom;
 
@@ -481,12 +498,29 @@ function createHeatmap(data) {
       .call(d3.axisLeft(y));
   }
 
+  // Add X axis label
+  svg.append("text")
+    .attr("class", "x-label")
+    .attr("text-anchor", "middle")
+    .attr("x", width / 2)
+    .attr("y", height + margin.bottom - 10)
+    .text("Day of Week");
+
+  // Add Y axis label
+  svg.append("text")
+    .attr("class", "y-label")
+    .attr("text-anchor", "middle")
+    .attr("transform", "rotate(-90)")
+    .attr("x", -height / 2)
+    .attr("y", -margin.left + 15)
+    .text("Number of Sightings");
+
   // Initial render
   updateChart();
 }
 
 function createTimeOfDayChart(data) {
-  const margin = { top: 20, right: 20, bottom: 30, left: 60 };
+  const margin = { top: 20, right: 20, bottom: 50, left: 60 };
   const width = document.getElementById("time-chart").offsetWidth - margin.left - margin.right;
   const height = 400 - margin.top - margin.bottom;
 
@@ -638,12 +672,29 @@ function createTimeOfDayChart(data) {
       .call(d3.axisLeft(y));
   }
 
+  // Add X axis label
+  svg.append("text")
+    .attr("class", "x-label")
+    .attr("text-anchor", "middle")
+    .attr("x", width / 2)
+    .attr("y", height + margin.bottom - 10)
+    .text("Time of Day");
+
+  // Add Y axis label
+  svg.append("text")
+    .attr("class", "y-label")
+    .attr("text-anchor", "middle")
+    .attr("transform", "rotate(-90)")
+    .attr("x", -height / 2)
+    .attr("y", -margin.left + 15)
+    .text("Number of Sightings");
+
   // Initial render
   updateChart();
 }
 
 function createSeasonChart(data) {
-  const margin = { top: 20, right: 20, bottom: 30, left: 60 };
+  const margin = { top: 20, right: 20, bottom: 50, left: 60 };
   const width = document.getElementById("season-chart").offsetWidth - margin.left - margin.right;
   const height = 400 - margin.top - margin.bottom;
 
@@ -802,6 +853,23 @@ function createSeasonChart(data) {
       .attr("class", "y-axis")
       .call(d3.axisLeft(y));
   }
+
+  // Add X axis label
+  svg.append("text")
+    .attr("class", "x-label")
+    .attr("text-anchor", "middle")
+    .attr("x", width / 2)
+    .attr("y", height + margin.bottom - 10)
+    .text("Season");
+
+  // Add Y axis label
+  svg.append("text")
+    .attr("class", "y-label")
+    .attr("text-anchor", "middle")
+    .attr("transform", "rotate(-90)")
+    .attr("x", -height / 2)
+    .attr("y", -margin.left + 15)
+    .text("Number of Sightings");
 
   // Initial render
   updateChart();
