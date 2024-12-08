@@ -15,6 +15,7 @@ d3.csv("data/ufo-sightings-transformed.csv").then((data) => {
   createHeatmap(data);
   createTimeOfDayChart(data);
   createSeasonChart(data);
+  createmirandachart(data);
   //createShapeChart(data);
 });
 
@@ -247,7 +248,8 @@ function createTimelineChart(data) {
   svg.append("g").attr("class", "y-axis");
 
   // Add X axis label
-  svg.append("text")
+  svg
+    .append("text")
     .attr("class", "x-label")
     .attr("text-anchor", "middle")
     .attr("x", width / 2)
@@ -255,7 +257,8 @@ function createTimelineChart(data) {
     .text("Year");
 
   // Add Y axis label
-  svg.append("text")
+  svg
+    .append("text")
     .attr("class", "y-label")
     .attr("text-anchor", "middle")
     .attr("transform", "rotate(-90)")
@@ -347,18 +350,23 @@ function createMap(data) {
 
 function createHeatmap(data) {
   const margin = { top: 20, right: 20, bottom: 50, left: 60 };
-  const width = document.getElementById("day-chart").offsetWidth - margin.left - margin.right;
+  const width =
+    document.getElementById("day-chart").offsetWidth -
+    margin.left -
+    margin.right;
   const height = 400 - margin.top - margin.bottom;
 
   // Add filter controls
-  const filterContainer = d3.select("#day-chart")
+  const filterContainer = d3
+    .select("#day-chart")
     .append("div")
     .attr("class", "filter-controls")
     .style("margin-bottom", "10px");
 
   // Add shape filter dropdown
-  const shapes = [...new Set(data.map(d => d.UFO_shape))];
-  filterContainer.append("select")
+  const shapes = [...new Set(data.map((d) => d.UFO_shape))];
+  filterContainer
+    .append("select")
     .attr("id", "day-shape-filter")
     .style("margin-right", "10px")
     .on("change", updateChart)
@@ -366,11 +374,14 @@ function createHeatmap(data) {
     .data(["All Shapes", ...shapes])
     .enter()
     .append("option")
-    .text(d => d);
+    .text((d) => d);
 
   // Add country filter dropdown
-  const countryCodes = [...new Set(data.map(d => d.Country_Code))].filter(code => code && code.trim() !== "");
-  filterContainer.append("select")
+  const countryCodes = [...new Set(data.map((d) => d.Country_Code))].filter(
+    (code) => code && code.trim() !== ""
+  );
+  filterContainer
+    .append("select")
     .attr("id", "day-country-filter")
     .style("margin-right", "10px")
     .on("change", updateChart)
@@ -378,10 +389,11 @@ function createHeatmap(data) {
     .data(["All Countries", ...countryCodes])
     .enter()
     .append("option")
-    .text(d => d);
+    .text((d) => d);
 
   // Create SVG container
-  const svg = d3.select("#day-chart")
+  const svg = d3
+    .select("#day-chart")
     .append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
@@ -389,7 +401,9 @@ function createHeatmap(data) {
     .attr("transform", `translate(${margin.left},${margin.top})`);
 
   // Create tooltip
-  const tooltip = d3.select("body").append("div")
+  const tooltip = d3
+    .select("body")
+    .append("div")
     .attr("class", "tooltip")
     .style("opacity", 0)
     .style("position", "fixed")
@@ -408,98 +422,102 @@ function createHeatmap(data) {
     // Filter data
     let filteredData = data;
     if (selectedShape !== "All Shapes") {
-      filteredData = filteredData.filter(d => d.UFO_shape === selectedShape);
+      filteredData = filteredData.filter((d) => d.UFO_shape === selectedShape);
     }
     if (selectedCountry !== "All Countries") {
-      filteredData = filteredData.filter(d => d.Country_Code === selectedCountry);
+      filteredData = filteredData.filter(
+        (d) => d.Country_Code === selectedCountry
+      );
     }
 
     // Count by day of week
     const dayCounts = d3.rollup(
       filteredData,
-      v => v.length,
-      d => d.day_of_week
+      (v) => v.length,
+      (d) => d.day_of_week
     );
 
     // Convert to array and sort by day order
-    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-    const dayData = days.map(day => ({
+    const days = [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ];
+    const dayData = days.map((day) => ({
       day: day,
-      count: dayCounts.get(day) || 0
+      count: dayCounts.get(day) || 0,
     }));
 
     // Update scales
-    const x = d3.scaleBand()
-      .range([0, width])
-      .domain(days)
-      .padding(0.1);
+    const x = d3.scaleBand().range([0, width]).domain(days).padding(0.1);
 
-    const y = d3.scaleLinear()
-      .domain([0, d3.max(dayData, d => d.count)])
+    const y = d3
+      .scaleLinear()
+      .domain([0, d3.max(dayData, (d) => d.count)])
       .range([height, 0]);
 
     // Update/create bars
-    const bars = svg.selectAll(".bar")
-      .data(dayData);
+    const bars = svg.selectAll(".bar").data(dayData);
 
     // Remove old bars
     bars.exit().remove();
 
     // Update existing bars
-    bars.transition()
+    bars
+      .transition()
       .duration(750)
-      .attr("x", d => x(d.day))
-      .attr("y", d => y(d.count))
+      .attr("x", (d) => x(d.day))
+      .attr("y", (d) => y(d.count))
       .attr("width", x.bandwidth())
-      .attr("height", d => height - y(d.count));
+      .attr("height", (d) => height - y(d.count));
 
     // Add new bars
-    bars.enter()
+    bars
+      .enter()
       .append("rect")
       .attr("class", "bar")
       .attr("fill", "#4CAF50")
-      .attr("x", d => x(d.day))
-      .attr("y", d => y(d.count))
+      .attr("x", (d) => x(d.day))
+      .attr("y", (d) => y(d.count))
       .attr("width", x.bandwidth())
-      .attr("height", d => height - y(d.count))
+      .attr("height", (d) => height - y(d.count))
       .attr("opacity", 0.8)
       .on("mouseover", (event, d) => {
-        d3.select(event.currentTarget)
-          .attr("opacity", 1);
+        d3.select(event.currentTarget).attr("opacity", 1);
 
-        tooltip.transition()
-          .duration(200)
-          .style("opacity", 0.9);
+        tooltip.transition().duration(200).style("opacity", 0.9);
 
-        tooltip.html(`Day: ${d.day}<br>Sightings: ${d.count}`)
+        tooltip
+          .html(`Day: ${d.day}<br>Sightings: ${d.count}`)
           .style("left", event.pageX + 10 + "px")
           .style("top", event.pageY - 28 + "px");
       })
       .on("mouseout", (event) => {
-        d3.select(event.currentTarget)
-          .attr("opacity", 0.8);
+        d3.select(event.currentTarget).attr("opacity", 0.8);
 
-        tooltip.transition()
-          .duration(500)
-          .style("opacity", 0);
+        tooltip.transition().duration(500).style("opacity", 0);
       });
 
     // Update axes
     svg.selectAll(".x-axis").remove();
     svg.selectAll(".y-axis").remove();
 
-    svg.append("g")
+    svg
+      .append("g")
       .attr("class", "x-axis")
       .attr("transform", `translate(0,${height})`)
       .call(d3.axisBottom(x));
 
-    svg.append("g")
-      .attr("class", "y-axis")
-      .call(d3.axisLeft(y));
+    svg.append("g").attr("class", "y-axis").call(d3.axisLeft(y));
   }
 
   // Add X axis label
-  svg.append("text")
+  svg
+    .append("text")
     .attr("class", "x-label")
     .attr("text-anchor", "middle")
     .attr("x", width / 2)
@@ -507,7 +525,8 @@ function createHeatmap(data) {
     .text("Day of Week");
 
   // Add Y axis label
-  svg.append("text")
+  svg
+    .append("text")
     .attr("class", "y-label")
     .attr("text-anchor", "middle")
     .attr("transform", "rotate(-90)")
@@ -521,18 +540,23 @@ function createHeatmap(data) {
 
 function createTimeOfDayChart(data) {
   const margin = { top: 20, right: 20, bottom: 50, left: 60 };
-  const width = document.getElementById("time-chart").offsetWidth - margin.left - margin.right;
+  const width =
+    document.getElementById("time-chart").offsetWidth -
+    margin.left -
+    margin.right;
   const height = 400 - margin.top - margin.bottom;
 
   // Add filter controls
-  const filterContainer = d3.select("#time-chart")
+  const filterContainer = d3
+    .select("#time-chart")
     .append("div")
     .attr("class", "filter-controls")
     .style("margin-bottom", "10px");
 
   // Add shape filter dropdown
-  const shapes = [...new Set(data.map(d => d.UFO_shape))];
-  filterContainer.append("select")
+  const shapes = [...new Set(data.map((d) => d.UFO_shape))];
+  filterContainer
+    .append("select")
     .attr("id", "time-shape-filter")
     .style("margin-right", "10px")
     .on("change", updateChart)
@@ -540,11 +564,14 @@ function createTimeOfDayChart(data) {
     .data(["All Shapes", ...shapes])
     .enter()
     .append("option")
-    .text(d => d);
+    .text((d) => d);
 
   // Add country filter dropdown
-  const countryCodes = [...new Set(data.map(d => d.Country_Code))].filter(code => code && code.trim() !== "");
-  filterContainer.append("select")
+  const countryCodes = [...new Set(data.map((d) => d.Country_Code))].filter(
+    (code) => code && code.trim() !== ""
+  );
+  filterContainer
+    .append("select")
     .attr("id", "time-country-filter")
     .style("margin-right", "10px")
     .on("change", updateChart)
@@ -552,10 +579,11 @@ function createTimeOfDayChart(data) {
     .data(["All Countries", ...countryCodes])
     .enter()
     .append("option")
-    .text(d => d);
+    .text((d) => d);
 
   // Create SVG container
-  const svg = d3.select("#time-chart")
+  const svg = d3
+    .select("#time-chart")
     .append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
@@ -563,7 +591,9 @@ function createTimeOfDayChart(data) {
     .attr("transform", `translate(${margin.left},${margin.top})`);
 
   // Create tooltip
-  const tooltip = d3.select("body").append("div")
+  const tooltip = d3
+    .select("body")
+    .append("div")
     .attr("class", "tooltip")
     .style("opacity", 0)
     .style("position", "fixed")
@@ -582,98 +612,102 @@ function createTimeOfDayChart(data) {
     // Filter data
     let filteredData = data;
     if (selectedShape !== "All Shapes") {
-      filteredData = filteredData.filter(d => d.UFO_shape === selectedShape);
+      filteredData = filteredData.filter((d) => d.UFO_shape === selectedShape);
     }
     if (selectedCountry !== "All Countries") {
-      filteredData = filteredData.filter(d => d.Country_Code === selectedCountry);
+      filteredData = filteredData.filter(
+        (d) => d.Country_Code === selectedCountry
+      );
     }
 
     // Count by hour
     const hourCounts = d3.rollup(
       filteredData,
-      v => v.length,
-      d => d.hour
+      (v) => v.length,
+      (d) => d.hour
     );
 
     // Convert to array and sort by hour
-    const hourData = Array.from({length: 24}, (_, i) => ({
+    const hourData = Array.from({ length: 24 }, (_, i) => ({
       hour: i,
-      count: hourCounts.get(i) || 0
+      count: hourCounts.get(i) || 0,
     }));
 
     // Update scales
-    const x = d3.scaleBand()
+    const x = d3
+      .scaleBand()
       .range([0, width])
-      .domain(hourData.map(d => d.hour))
+      .domain(hourData.map((d) => d.hour))
       .padding(0.1);
 
-    const y = d3.scaleLinear()
-      .domain([0, d3.max(hourData, d => d.count)])
+    const y = d3
+      .scaleLinear()
+      .domain([0, d3.max(hourData, (d) => d.count)])
       .range([height, 0]);
 
     // Update/create bars
-    const bars = svg.selectAll(".bar")
-      .data(hourData);
+    const bars = svg.selectAll(".bar").data(hourData);
 
     // Remove old bars
     bars.exit().remove();
 
     // Update existing bars
-    bars.transition()
+    bars
+      .transition()
       .duration(750)
-      .attr("x", d => x(d.hour))
-      .attr("y", d => y(d.count))
+      .attr("x", (d) => x(d.hour))
+      .attr("y", (d) => y(d.count))
       .attr("width", x.bandwidth())
-      .attr("height", d => height - y(d.count));
+      .attr("height", (d) => height - y(d.count));
 
     // Add new bars
-    bars.enter()
+    bars
+      .enter()
       .append("rect")
       .attr("class", "bar")
       .attr("fill", "#4CAF50")
-      .attr("x", d => x(d.hour))
-      .attr("y", d => y(d.count))
+      .attr("x", (d) => x(d.hour))
+      .attr("y", (d) => y(d.count))
       .attr("width", x.bandwidth())
-      .attr("height", d => height - y(d.count))
+      .attr("height", (d) => height - y(d.count))
       .attr("opacity", 0.8)
       .on("mouseover", (event, d) => {
-        d3.select(event.currentTarget)
-          .attr("opacity", 1);
+        d3.select(event.currentTarget).attr("opacity", 1);
 
-        tooltip.transition()
-          .duration(200)
-          .style("opacity", 0.9);
+        tooltip.transition().duration(200).style("opacity", 0.9);
 
-        const hourFormatted = d.hour.toString().padStart(2, '0') + ':00';
-        tooltip.html(`Time: ${hourFormatted}<br>Sightings: ${d.count}`)
+        const hourFormatted = d.hour.toString().padStart(2, "0") + ":00";
+        tooltip
+          .html(`Time: ${hourFormatted}<br>Sightings: ${d.count}`)
           .style("left", event.pageX + 10 + "px")
           .style("top", event.pageY - 28 + "px");
       })
       .on("mouseout", (event) => {
-        d3.select(event.currentTarget)
-          .attr("opacity", 0.8);
+        d3.select(event.currentTarget).attr("opacity", 0.8);
 
-        tooltip.transition()
-          .duration(500)
-          .style("opacity", 0);
+        tooltip.transition().duration(500).style("opacity", 0);
       });
 
     // Update axes
     svg.selectAll(".x-axis").remove();
     svg.selectAll(".y-axis").remove();
 
-    svg.append("g")
+    svg
+      .append("g")
       .attr("class", "x-axis")
       .attr("transform", `translate(0,${height})`)
-      .call(d3.axisBottom(x).tickFormat(d => d.toString().padStart(2, '0') + ':00'));
+      .call(
+        d3
+          .axisBottom(x)
+          .tickFormat((d) => d.toString().padStart(2, "0") + ":00")
+      );
 
-    svg.append("g")
-      .attr("class", "y-axis")
-      .call(d3.axisLeft(y));
+    svg.append("g").attr("class", "y-axis").call(d3.axisLeft(y));
   }
 
   // Add X axis label
-  svg.append("text")
+  svg
+    .append("text")
     .attr("class", "x-label")
     .attr("text-anchor", "middle")
     .attr("x", width / 2)
@@ -681,7 +715,8 @@ function createTimeOfDayChart(data) {
     .text("Time of Day");
 
   // Add Y axis label
-  svg.append("text")
+  svg
+    .append("text")
     .attr("class", "y-label")
     .attr("text-anchor", "middle")
     .attr("transform", "rotate(-90)")
@@ -695,18 +730,23 @@ function createTimeOfDayChart(data) {
 
 function createSeasonChart(data) {
   const margin = { top: 20, right: 20, bottom: 50, left: 60 };
-  const width = document.getElementById("season-chart").offsetWidth - margin.left - margin.right;
+  const width =
+    document.getElementById("season-chart").offsetWidth -
+    margin.left -
+    margin.right;
   const height = 400 - margin.top - margin.bottom;
 
   // Add filter controls
-  const filterContainer = d3.select("#season-chart")
+  const filterContainer = d3
+    .select("#season-chart")
     .append("div")
     .attr("class", "filter-controls")
     .style("margin-bottom", "10px");
 
   // Add shape filter dropdown
-  const shapes = [...new Set(data.map(d => d.UFO_shape))];
-  filterContainer.append("select")
+  const shapes = [...new Set(data.map((d) => d.UFO_shape))];
+  filterContainer
+    .append("select")
     .attr("id", "season-shape-filter")
     .style("margin-right", "10px")
     .on("change", updateChart)
@@ -714,11 +754,14 @@ function createSeasonChart(data) {
     .data(["All Shapes", ...shapes])
     .enter()
     .append("option")
-    .text(d => d);
+    .text((d) => d);
 
   // Add country filter dropdown
-  const countryCodes = [...new Set(data.map(d => d.Country_Code))].filter(code => code && code.trim() !== "");
-  filterContainer.append("select")
+  const countryCodes = [...new Set(data.map((d) => d.Country_Code))].filter(
+    (code) => code && code.trim() !== ""
+  );
+  filterContainer
+    .append("select")
     .attr("id", "season-country-filter")
     .style("margin-right", "10px")
     .on("change", updateChart)
@@ -726,10 +769,11 @@ function createSeasonChart(data) {
     .data(["All Countries", ...countryCodes])
     .enter()
     .append("option")
-    .text(d => d);
+    .text((d) => d);
 
   // Create SVG container
-  const svg = d3.select("#season-chart")
+  const svg = d3
+    .select("#season-chart")
     .append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
@@ -737,7 +781,9 @@ function createSeasonChart(data) {
     .attr("transform", `translate(${margin.left},${margin.top})`);
 
   // Create tooltip
-  const tooltip = d3.select("body").append("div")
+  const tooltip = d3
+    .select("body")
+    .append("div")
     .attr("class", "tooltip")
     .style("opacity", 0)
     .style("position", "fixed")
@@ -764,98 +810,94 @@ function createSeasonChart(data) {
     // Filter data
     let filteredData = data;
     if (selectedShape !== "All Shapes") {
-      filteredData = filteredData.filter(d => d.UFO_shape === selectedShape);
+      filteredData = filteredData.filter((d) => d.UFO_shape === selectedShape);
     }
     if (selectedCountry !== "All Countries") {
-      filteredData = filteredData.filter(d => d.Country_Code === selectedCountry);
+      filteredData = filteredData.filter(
+        (d) => d.Country_Code === selectedCountry
+      );
     }
 
     // Count by season
     const seasonCounts = d3.rollup(
       filteredData,
-      v => v.length,
-      d => getSeason(d.Date_time)
+      (v) => v.length,
+      (d) => getSeason(d.Date_time)
     );
 
     // Convert to array and sort by season order
     const seasons = ["Winter", "Spring", "Summer", "Fall"];
-    const seasonData = seasons.map(season => ({
+    const seasonData = seasons.map((season) => ({
       season: season,
-      count: seasonCounts.get(season) || 0
+      count: seasonCounts.get(season) || 0,
     }));
 
     // Update scales
-    const x = d3.scaleBand()
-      .range([0, width])
-      .domain(seasons)
-      .padding(0.1);
+    const x = d3.scaleBand().range([0, width]).domain(seasons).padding(0.1);
 
-    const y = d3.scaleLinear()
-      .domain([0, d3.max(seasonData, d => d.count)])
+    const y = d3
+      .scaleLinear()
+      .domain([0, d3.max(seasonData, (d) => d.count)])
       .range([height, 0]);
 
     // Update/create bars
-    const bars = svg.selectAll(".bar")
-      .data(seasonData);
+    const bars = svg.selectAll(".bar").data(seasonData);
 
     // Remove old bars
     bars.exit().remove();
 
     // Update existing bars
-    bars.transition()
+    bars
+      .transition()
       .duration(750)
-      .attr("x", d => x(d.season))
-      .attr("y", d => y(d.count))
+      .attr("x", (d) => x(d.season))
+      .attr("y", (d) => y(d.count))
       .attr("width", x.bandwidth())
-      .attr("height", d => height - y(d.count));
+      .attr("height", (d) => height - y(d.count));
 
     // Add new bars
-    bars.enter()
+    bars
+      .enter()
       .append("rect")
       .attr("class", "bar")
       .attr("fill", "#4CAF50")
-      .attr("x", d => x(d.season))
-      .attr("y", d => y(d.count))
+      .attr("x", (d) => x(d.season))
+      .attr("y", (d) => y(d.count))
       .attr("width", x.bandwidth())
-      .attr("height", d => height - y(d.count))
+      .attr("height", (d) => height - y(d.count))
       .attr("opacity", 0.8)
       .on("mouseover", (event, d) => {
-        d3.select(event.currentTarget)
-          .attr("opacity", 1);
+        d3.select(event.currentTarget).attr("opacity", 1);
 
-        tooltip.transition()
-          .duration(200)
-          .style("opacity", 0.9);
+        tooltip.transition().duration(200).style("opacity", 0.9);
 
-        tooltip.html(`Season: ${d.season}<br>Sightings: ${d.count}`)
+        tooltip
+          .html(`Season: ${d.season}<br>Sightings: ${d.count}`)
           .style("left", event.pageX + 10 + "px")
           .style("top", event.pageY - 28 + "px");
       })
       .on("mouseout", (event) => {
-        d3.select(event.currentTarget)
-          .attr("opacity", 0.8);
+        d3.select(event.currentTarget).attr("opacity", 0.8);
 
-        tooltip.transition()
-          .duration(500)
-          .style("opacity", 0);
+        tooltip.transition().duration(500).style("opacity", 0);
       });
 
     // Update axes
     svg.selectAll(".x-axis").remove();
     svg.selectAll(".y-axis").remove();
 
-    svg.append("g")
+    svg
+      .append("g")
       .attr("class", "x-axis")
       .attr("transform", `translate(0,${height})`)
       .call(d3.axisBottom(x));
 
-    svg.append("g")
-      .attr("class", "y-axis")
-      .call(d3.axisLeft(y));
+    svg.append("g").attr("class", "y-axis").call(d3.axisLeft(y));
   }
 
   // Add X axis label
-  svg.append("text")
+  svg
+    .append("text")
     .attr("class", "x-label")
     .attr("text-anchor", "middle")
     .attr("x", width / 2)
@@ -863,7 +905,8 @@ function createSeasonChart(data) {
     .text("Season");
 
   // Add Y axis label
-  svg.append("text")
+  svg
+    .append("text")
     .attr("class", "y-label")
     .attr("text-anchor", "middle")
     .attr("transform", "rotate(-90)")
@@ -873,6 +916,125 @@ function createSeasonChart(data) {
 
   // Initial render
   updateChart();
+}
+
+function createmirandachart(data) {
+  const margin = { top: 20, right: 20, bottom: 30, left: 60 };
+  const width =
+    document.getElementById("miranda-chart").offsetWidth -
+    margin.left -
+    margin.right;
+  const height = 400 - margin.top - margin.bottom;
+
+  // Days of the week
+  const days = [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
+  ];
+
+  // Parse and clean data
+  const cleanedData = data
+    .filter((d) => !isNaN(d.Hour)) // Exclude rows where Hour is NaN
+    .map((d) => ({
+      day: d.day_of_week,
+      hour: +d.Hour, // Convert Hour to a number
+      count: d.count || 1, // Default count to 1 if not provided
+    }));
+
+  // Aggregating counts by day/hour
+  const counts = d3.rollup(
+    cleanedData,
+    (v) => v.length,
+    (d) => d.day,
+    (d) => d.hour
+  );
+
+  // Scales
+  const xScale = d3
+    .scaleLinear()
+    .domain([0, 24]) // Hours from 0 to 24
+    .range([0, width]);
+
+  const yScale = d3
+    .scaleBand()
+    .domain(days) // Days of the week
+    .range([0, height])
+    .padding(0.1); // Space between rows
+
+  const colorScale = d3
+    .scaleSequential(d3.interpolateBlues)
+    .domain([0, d3.max([...counts.values()].flatMap((d) => [...d.values()]))]);
+
+  // Create SVG container
+  const svg = d3
+    .select("#miranda-chart")
+    .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
+
+  // Draw continuous heatmap
+  const xStep = width / 240; // Smaller steps for smooth interpolation
+  const yStep = yScale.bandwidth(); // Use row height for vertical resolution
+
+  for (const [day, hourMap] of counts.entries()) {
+    for (let hour = 0; hour <= 24; hour += 0.1) {
+      // Fine-grained interpolation
+      const lower = Math.floor(hour);
+      const upper = Math.ceil(hour);
+      const lowerCount = hourMap.get(lower) || 0;
+      const upperCount = hourMap.get(upper) || 0;
+
+      // Interpolate count
+      const interpolatedCount =
+        lower === upper
+          ? lowerCount
+          : lowerCount + (hour - lower) * (upperCount - lowerCount);
+
+      svg
+        .append("rect")
+        .attr("x", xScale(hour))
+        .attr("y", yScale(day))
+        .attr("width", xStep)
+        .attr("height", yStep)
+        .attr("fill", colorScale(interpolatedCount));
+    }
+  }
+
+  // Add axes
+  svg
+    .append("g")
+    .attr("class", "x-axis")
+    .attr("transform", `translate(0,${height})`)
+    .call(
+      d3
+        .axisBottom(xScale)
+        .ticks(24)
+        .tickFormat((d) => `${d}:00`)
+    );
+
+  svg.append("g").attr("class", "y-axis").call(d3.axisLeft(yScale));
+
+  // Add labels
+  svg
+    .append("text")
+    .attr("x", width / 2)
+    .attr("y", height + margin.bottom - 10)
+    .attr("text-anchor", "middle")
+    .text("Hour of Day");
+
+  svg
+    .append("text")
+    .attr("x", -margin.left / 2)
+    .attr("y", -margin.top / 2 + 10)
+    .attr("text-anchor", "start")
+    .text("Day of the Week");
 }
 
 // function createShapeChart(data) {
