@@ -919,56 +919,47 @@ function createSeasonChart(data) {
 }
 
 function createmirandachart(data) {
-  const margin = { top: 20, right: 20, bottom: 30, left: 60 };
+  const margin = { top: 20, right: 20, bottom: 50, left: 80 };
   const width =
     document.getElementById("miranda-chart").offsetWidth -
     margin.left -
     margin.right;
   const height = 400 - margin.top - margin.bottom;
 
-  // Days of the week
-  const days = [
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-    "Sunday",
-  ];
+  // Add filter controls
+  const filterContainer = d3
+    .select("#miranda-chart")
+    .append("div")
+    .attr("class", "filter-controls")
+    .style("margin-bottom", "10px");
 
-  // Parse and clean data
-  const cleanedData = data
-    .filter((d) => !isNaN(d.Hour)) // Exclude rows where Hour is NaN
-    .map((d) => ({
-      day: d.day_of_week,
-      hour: +d.Hour, // Convert Hour to a number
-      count: d.count || 1, // Default count to 1 if not provided
-    }));
+  // Add shape filter dropdown
+  const shapes = [...new Set(data.map((d) => d.UFO_shape))];
+  filterContainer
+    .append("select")
+    .attr("id", "miranda-shape-filter")
+    .style("margin-right", "10px")
+    .on("change", updateChart)
+    .selectAll("option")
+    .data(["All Shapes", ...shapes])
+    .enter()
+    .append("option")
+    .text((d) => d);
 
-  // Aggregating counts by day/hour
-  const counts = d3.rollup(
-    cleanedData,
-    (v) => v.length,
-    (d) => d.day,
-    (d) => d.hour
+  // Add country filter dropdown
+  const countryCodes = [...new Set(data.map((d) => d.Country_Code))].filter(
+    (code) => code && code.trim() !== ""
   );
-
-  // Scales
-  const xScale = d3
-    .scaleLinear()
-    .domain([0, 24]) // Hours from 0 to 24
-    .range([0, width]);
-
-  const yScale = d3
-    .scaleBand()
-    .domain(days) // Days of the week
-    .range([0, height])
-    .padding(0.1); // Space between rows
-
-  const colorScale = d3
-    .scaleSequential(d3.interpolateBlues)
-    .domain([0, d3.max([...counts.values()].flatMap((d) => [...d.values()]))]);
+  filterContainer
+    .append("select")
+    .attr("id", "miranda-country-filter")
+    .style("margin-right", "10px")
+    .on("change", updateChart)
+    .selectAll("option")
+    .data(["All Countries", ...countryCodes])
+    .enter()
+    .append("option")
+    .text((d) => d);
 
   // Create SVG container
   const svg = d3
@@ -979,64 +970,120 @@ function createmirandachart(data) {
     .append("g")
     .attr("transform", `translate(${margin.left},${margin.top})`);
 
-  // Draw continuous heatmap
-  const xStep = width / 240; // Smaller steps for smooth interpolation
-  const yStep = yScale.bandwidth(); // Use row height for vertical resolution
+  function updateChart() {
+    const selectedShape = d3.select("#miranda-shape-filter").node().value;
+    const selectedCountry = d3.select("#miranda-country-filter").node().value;
 
-  for (const [day, hourMap] of counts.entries()) {
-    for (let hour = 0; hour <= 24; hour += 0.1) {
-      // Fine-grained interpolation
-      const lower = Math.floor(hour);
-      const upper = Math.ceil(hour);
-      const lowerCount = hourMap.get(lower) || 0;
-      const upperCount = hourMap.get(upper) || 0;
-
-      // Interpolate count
-      const interpolatedCount =
-        lower === upper
-          ? lowerCount
-          : lowerCount + (hour - lower) * (upperCount - lowerCount);
-
-      svg
-        .append("rect")
-        .attr("x", xScale(hour))
-        .attr("y", yScale(day))
-        .attr("width", xStep)
-        .attr("height", yStep)
-        .attr("fill", colorScale(interpolatedCount));
+    // Filter data
+    let filteredData = data;
+    if (selectedShape !== "All Shapes") {
+      filteredData = filteredData.filter((d) => d.UFO_shape === selectedShape);
     }
-  }
+    if (selectedCountry !== "All Countries") {
+      filteredData = filteredData.filter(
+        (d) => d.Country_Code === selectedCountry
+      );
+    }
 
-  // Add axes
-  svg
-    .append("g")
-    .attr("class", "x-axis")
-    .attr("transform", `translate(0,${height})`)
-    .call(
-      d3
-        .axisBottom(xScale)
-        .ticks(24)
-        .tickFormat((d) => `${d}:00`)
+    // Days of the week
+    const days = [
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday",
+    ];
+
+    // Clean and aggregate the filtered data
+    const cleanedData = filteredData
+      .filter((d) => !isNaN(d.Hour))
+      .map((d) => ({
+        day: d.day_of_week,
+        hour: +d.Hour,
+        count: d.count || 1,
+      }));
+
+    const counts = d3.rollup(
+      cleanedData,
+      (v) => v.length,
+      (d) => d.day,
+      (d) => d.hour
     );
 
-  svg.append("g").attr("class", "y-axis").call(d3.axisLeft(yScale));
+    // Clear existing elements
+    svg.selectAll("rect").remove();
+    svg.selectAll(".x-axis").remove();
+    svg.selectAll(".y-axis").remove();
+    svg.selectAll(".x-label").remove();
+    svg.selectAll(".y-label").remove();
 
-  // Add labels
-  svg
-    .append("text")
-    .attr("x", width / 2)
-    .attr("y", height + margin.bottom - 10)
-    .attr("text-anchor", "middle")
-    .text("Hour of Day");
+    // Scales
+    const xScale = d3.scaleLinear().domain([0, 24]).range([0, width]);
+    const yScale = d3.scaleBand().domain(days).range([0, height]).padding(0.1);
+    const colorScale = d3
+      .scaleSequential()
+      .domain([0, d3.max([...counts.values()].flatMap(d => [...d.values()]))])
+      .interpolator(d3.interpolate('#e8f5e9', '#2e7d32'));
 
-  svg
-    .append("text")
-    .attr("x", -margin.left / 2)
-    .attr("y", -margin.top / 2 + 10)
-    .attr("text-anchor", "start")
-    .text("Day of the Week");
+    // Draw heatmap
+    const xStep = width / 240;
+    const yStep = yScale.bandwidth();
+
+    for (const [day, hourMap] of counts.entries()) {
+      for (let hour = 0; hour <= 24; hour += 0.1) {
+        const lower = Math.floor(hour);
+        const upper = Math.ceil(hour);
+        const lowerCount = hourMap.get(lower) || 0;
+        const upperCount = hourMap.get(upper) || 0;
+
+        const interpolatedCount =
+          lower === upper
+            ? lowerCount
+            : lowerCount + (hour - lower) * (upperCount - lowerCount);
+
+        svg
+          .append("rect")
+          .attr("x", xScale(hour))
+          .attr("y", yScale(day))
+          .attr("width", xStep)
+          .attr("height", yStep)
+          .attr("fill", colorScale(interpolatedCount));
+      }
+    }
+
+    // Add axes
+    svg
+      .append("g")
+      .attr("class", "x-axis")
+      .attr("transform", `translate(0,${height})`)
+      .call(d3.axisBottom(xScale).ticks(24).tickFormat((d) => `${d}:00`));
+
+    svg.append("g").attr("class", "y-axis").call(d3.axisLeft(yScale));
+
+    // Add labels
+    svg
+      .append("text")
+      .attr("class", "x-label")
+      .attr("text-anchor", "middle")
+      .attr("x", width / 2)
+      .attr("y", height + margin.bottom - 10)
+      .text("Hour of Day");
+
+    svg
+      .append("text")
+      .attr("class", "y-label")
+      .attr("text-anchor", "middle")
+      .attr("transform", "rotate(-90)")
+      .attr("x", -height / 2)
+      .attr("y", -margin.left + 10)
+      .text("Day of Week");
+  }
+
+  // Initial render
+  updateChart();
 }
-
 // function createShapeChart(data) {
 //   // Initial setup
 //   const margin = { top: 20, right: 20, bottom: 70, left: 40 };
@@ -1183,3 +1230,4 @@ function createmirandachart(data) {
 //   // Initial render
 //   updateChart();
 // }
+
