@@ -6,14 +6,15 @@ d3.csv("data/ufo-sightings-transformed.csv").then((data) => {
     d.latitude = +d.latitude;
     d.longitude = +d.longitude;
     d.length_of_encounter_seconds = +d.length_of_encounter_seconds;
-    d.hour = +d.hour;
-
+    d.hour = d.Date_time.getHours();
     d.day_of_week = getDayOfWeek(d.Date_time);
   });
 
   createTimelineChart(data);
   createMap(data);
   createHeatmap(data);
+  createTimeOfDayChart(data);
+  createSeasonChart(data);
   //createShapeChart(data);
 });
 
@@ -328,84 +329,482 @@ function createMap(data) {
 }
 
 function createHeatmap(data) {
-  const margin = { top: 20, right: 20, bottom: 30, left: 40 };
-  const width =
-    document.getElementById("day-chart").offsetWidth -
-    margin.left -
-    margin.right;
+  const margin = { top: 20, right: 20, bottom: 30, left: 60 };
+  const width = document.getElementById("day-chart").offsetWidth - margin.left - margin.right;
   const height = 400 - margin.top - margin.bottom;
-  const days = [
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-    "Sunday",
-  ];
-  const hours = d3.range(0, 24);
 
-  // Scales
-  const xScale = d3.scaleBand().domain(hours).range([0, width]).padding(0.05);
-  const yScale = d3.scaleBand().domain(days).range([0, height]).padding(0.05);
-  const colorScale = d3
-    .scaleSequential(d3.interpolateViridis)
-    .domain([0, d3.max(data, (d) => d.count)]);
+  // Add filter controls
+  const filterContainer = d3.select("#day-chart")
+    .append("div")
+    .attr("class", "filter-controls")
+    .style("margin-bottom", "10px");
+
+  // Add shape filter dropdown
+  const shapes = [...new Set(data.map(d => d.UFO_shape))];
+  filterContainer.append("select")
+    .attr("id", "day-shape-filter")
+    .style("margin-right", "10px")
+    .on("change", updateChart)
+    .selectAll("option")
+    .data(["All Shapes", ...shapes])
+    .enter()
+    .append("option")
+    .text(d => d);
+
+  // Add country filter dropdown
+  const countryCodes = [...new Set(data.map(d => d.Country_Code))].filter(code => code && code.trim() !== "");
+  filterContainer.append("select")
+    .attr("id", "day-country-filter")
+    .style("margin-right", "10px")
+    .on("change", updateChart)
+    .selectAll("option")
+    .data(["All Countries", ...countryCodes])
+    .enter()
+    .append("option")
+    .text(d => d);
 
   // Create SVG container
-  const svg = d3
-    .select("#day-chart")
+  const svg = d3.select("#day-chart")
     .append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
     .append("g")
     .attr("transform", `translate(${margin.left},${margin.top})`);
 
-  // Draw heatmap
-  svg
-    .selectAll(".tile")
-    .data(data)
+  // Create tooltip
+  const tooltip = d3.select("body").append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0)
+    .style("position", "fixed")
+    .style("background-color", "rgba(25, 25, 40, 0.9)")
+    .style("color", "#fff")
+    .style("padding", "8px")
+    .style("border-radius", "4px")
+    .style("font-size", "12px")
+    .style("pointer-events", "none")
+    .style("border", "1px solid #4CAF50");
+
+  function updateChart() {
+    const selectedShape = d3.select("#day-shape-filter").node().value;
+    const selectedCountry = d3.select("#day-country-filter").node().value;
+
+    // Filter data
+    let filteredData = data;
+    if (selectedShape !== "All Shapes") {
+      filteredData = filteredData.filter(d => d.UFO_shape === selectedShape);
+    }
+    if (selectedCountry !== "All Countries") {
+      filteredData = filteredData.filter(d => d.Country_Code === selectedCountry);
+    }
+
+    // Count by day of week
+    const dayCounts = d3.rollup(
+      filteredData,
+      v => v.length,
+      d => d.day_of_week
+    );
+
+    // Convert to array and sort by day order
+    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const dayData = days.map(day => ({
+      day: day,
+      count: dayCounts.get(day) || 0
+    }));
+
+    // Update scales
+    const x = d3.scaleBand()
+      .range([0, width])
+      .domain(days)
+      .padding(0.1);
+
+    const y = d3.scaleLinear()
+      .domain([0, d3.max(dayData, d => d.count)])
+      .range([height, 0]);
+
+    // Update/create bars
+    const bars = svg.selectAll(".bar")
+      .data(dayData);
+
+    // Remove old bars
+    bars.exit().remove();
+
+    // Update existing bars
+    bars.transition()
+      .duration(750)
+      .attr("x", d => x(d.day))
+      .attr("y", d => y(d.count))
+      .attr("width", x.bandwidth())
+      .attr("height", d => height - y(d.count));
+
+    // Add new bars
+    bars.enter()
+      .append("rect")
+      .attr("class", "bar")
+      .attr("fill", "#4CAF50")
+      .attr("x", d => x(d.day))
+      .attr("y", d => y(d.count))
+      .attr("width", x.bandwidth())
+      .attr("height", d => height - y(d.count))
+      .attr("opacity", 0.8)
+      .on("mouseover", (event, d) => {
+        d3.select(event.currentTarget)
+          .attr("opacity", 1);
+
+        tooltip.transition()
+          .duration(200)
+          .style("opacity", 0.9);
+
+        tooltip.html(`Day: ${d.day}<br>Sightings: ${d.count}`)
+          .style("left", event.pageX + 10 + "px")
+          .style("top", event.pageY - 28 + "px");
+      })
+      .on("mouseout", (event) => {
+        d3.select(event.currentTarget)
+          .attr("opacity", 0.8);
+
+        tooltip.transition()
+          .duration(500)
+          .style("opacity", 0);
+      });
+
+    // Update axes
+    svg.selectAll(".x-axis").remove();
+    svg.selectAll(".y-axis").remove();
+
+    svg.append("g")
+      .attr("class", "x-axis")
+      .attr("transform", `translate(0,${height})`)
+      .call(d3.axisBottom(x));
+
+    svg.append("g")
+      .attr("class", "y-axis")
+      .call(d3.axisLeft(y));
+  }
+
+  // Initial render
+  updateChart();
+}
+
+function createTimeOfDayChart(data) {
+  const margin = { top: 20, right: 20, bottom: 30, left: 60 };
+  const width = document.getElementById("time-chart").offsetWidth - margin.left - margin.right;
+  const height = 400 - margin.top - margin.bottom;
+
+  // Add filter controls
+  const filterContainer = d3.select("#time-chart")
+    .append("div")
+    .attr("class", "filter-controls")
+    .style("margin-bottom", "10px");
+
+  // Add shape filter dropdown
+  const shapes = [...new Set(data.map(d => d.UFO_shape))];
+  filterContainer.append("select")
+    .attr("id", "time-shape-filter")
+    .style("margin-right", "10px")
+    .on("change", updateChart)
+    .selectAll("option")
+    .data(["All Shapes", ...shapes])
     .enter()
-    .append("rect")
-    .attr("x", (d) => xScale(d.hour))
-    .attr("y", (d) => yScale(d.day))
-    .attr("width", xScale.bandwidth())
-    .attr("height", yScale.bandwidth())
-    .attr("fill", (d) => colorScale(d.count))
-    .on("mouseover", (event, d) => {
-      d3.select(".tooltip")
-        .style("display", "block")
-        .style("left", event.pageX + 5 + "px")
-        .style("top", event.pageY - 30 + "px")
-        .html(`Day: ${d.day}<br>Hour: ${d.hour}<br>Count: ${d.count}`);
-    })
-    .on("mouseout", () => {
-      d3.select(".tooltip").style("display", "none");
-    });
+    .append("option")
+    .text(d => d);
 
-  // Add axes
-  svg
+  // Add country filter dropdown
+  const countryCodes = [...new Set(data.map(d => d.Country_Code))].filter(code => code && code.trim() !== "");
+  filterContainer.append("select")
+    .attr("id", "time-country-filter")
+    .style("margin-right", "10px")
+    .on("change", updateChart)
+    .selectAll("option")
+    .data(["All Countries", ...countryCodes])
+    .enter()
+    .append("option")
+    .text(d => d);
+
+  // Create SVG container
+  const svg = d3.select("#time-chart")
+    .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
     .append("g")
-    .attr("class", "x-axis")
-    .attr("transform", `translate(0,${height})`)
-    .call(d3.axisBottom(xScale).tickFormat((d) => `${d}:00`));
+    .attr("transform", `translate(${margin.left},${margin.top})`);
 
-  svg.append("g").attr("class", "y-axis").call(d3.axisLeft(yScale));
+  // Create tooltip
+  const tooltip = d3.select("body").append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0)
+    .style("position", "fixed")
+    .style("background-color", "rgba(25, 25, 40, 0.9)")
+    .style("color", "#fff")
+    .style("padding", "8px")
+    .style("border-radius", "4px")
+    .style("font-size", "12px")
+    .style("pointer-events", "none")
+    .style("border", "1px solid #4CAF50");
 
-  // Add labels
-  svg
-    .append("text")
-    .attr("x", width / 2)
-    .attr("y", height + margin.bottom - 10)
-    .attr("text-anchor", "middle")
-    .text("Hour of Day");
+  function updateChart() {
+    const selectedShape = d3.select("#time-shape-filter").node().value;
+    const selectedCountry = d3.select("#time-country-filter").node().value;
 
-  svg
-    .append("text")
-    .attr("x", -margin.left / 2)
-    .attr("y", -margin.top / 2 + 10)
-    .attr("text-anchor", "start")
-    .text("Day of the Week");
+    // Filter data
+    let filteredData = data;
+    if (selectedShape !== "All Shapes") {
+      filteredData = filteredData.filter(d => d.UFO_shape === selectedShape);
+    }
+    if (selectedCountry !== "All Countries") {
+      filteredData = filteredData.filter(d => d.Country_Code === selectedCountry);
+    }
+
+    // Count by hour
+    const hourCounts = d3.rollup(
+      filteredData,
+      v => v.length,
+      d => d.hour
+    );
+
+    // Convert to array and sort by hour
+    const hourData = Array.from({length: 24}, (_, i) => ({
+      hour: i,
+      count: hourCounts.get(i) || 0
+    }));
+
+    // Update scales
+    const x = d3.scaleBand()
+      .range([0, width])
+      .domain(hourData.map(d => d.hour))
+      .padding(0.1);
+
+    const y = d3.scaleLinear()
+      .domain([0, d3.max(hourData, d => d.count)])
+      .range([height, 0]);
+
+    // Update/create bars
+    const bars = svg.selectAll(".bar")
+      .data(hourData);
+
+    // Remove old bars
+    bars.exit().remove();
+
+    // Update existing bars
+    bars.transition()
+      .duration(750)
+      .attr("x", d => x(d.hour))
+      .attr("y", d => y(d.count))
+      .attr("width", x.bandwidth())
+      .attr("height", d => height - y(d.count));
+
+    // Add new bars
+    bars.enter()
+      .append("rect")
+      .attr("class", "bar")
+      .attr("fill", "#4CAF50")
+      .attr("x", d => x(d.hour))
+      .attr("y", d => y(d.count))
+      .attr("width", x.bandwidth())
+      .attr("height", d => height - y(d.count))
+      .attr("opacity", 0.8)
+      .on("mouseover", (event, d) => {
+        d3.select(event.currentTarget)
+          .attr("opacity", 1);
+
+        tooltip.transition()
+          .duration(200)
+          .style("opacity", 0.9);
+
+        const hourFormatted = d.hour.toString().padStart(2, '0') + ':00';
+        tooltip.html(`Time: ${hourFormatted}<br>Sightings: ${d.count}`)
+          .style("left", event.pageX + 10 + "px")
+          .style("top", event.pageY - 28 + "px");
+      })
+      .on("mouseout", (event) => {
+        d3.select(event.currentTarget)
+          .attr("opacity", 0.8);
+
+        tooltip.transition()
+          .duration(500)
+          .style("opacity", 0);
+      });
+
+    // Update axes
+    svg.selectAll(".x-axis").remove();
+    svg.selectAll(".y-axis").remove();
+
+    svg.append("g")
+      .attr("class", "x-axis")
+      .attr("transform", `translate(0,${height})`)
+      .call(d3.axisBottom(x).tickFormat(d => d.toString().padStart(2, '0') + ':00'));
+
+    svg.append("g")
+      .attr("class", "y-axis")
+      .call(d3.axisLeft(y));
+  }
+
+  // Initial render
+  updateChart();
+}
+
+function createSeasonChart(data) {
+  const margin = { top: 20, right: 20, bottom: 30, left: 60 };
+  const width = document.getElementById("season-chart").offsetWidth - margin.left - margin.right;
+  const height = 400 - margin.top - margin.bottom;
+
+  // Add filter controls
+  const filterContainer = d3.select("#season-chart")
+    .append("div")
+    .attr("class", "filter-controls")
+    .style("margin-bottom", "10px");
+
+  // Add shape filter dropdown
+  const shapes = [...new Set(data.map(d => d.UFO_shape))];
+  filterContainer.append("select")
+    .attr("id", "season-shape-filter")
+    .style("margin-right", "10px")
+    .on("change", updateChart)
+    .selectAll("option")
+    .data(["All Shapes", ...shapes])
+    .enter()
+    .append("option")
+    .text(d => d);
+
+  // Add country filter dropdown
+  const countryCodes = [...new Set(data.map(d => d.Country_Code))].filter(code => code && code.trim() !== "");
+  filterContainer.append("select")
+    .attr("id", "season-country-filter")
+    .style("margin-right", "10px")
+    .on("change", updateChart)
+    .selectAll("option")
+    .data(["All Countries", ...countryCodes])
+    .enter()
+    .append("option")
+    .text(d => d);
+
+  // Create SVG container
+  const svg = d3.select("#season-chart")
+    .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
+
+  // Create tooltip
+  const tooltip = d3.select("body").append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0)
+    .style("position", "fixed")
+    .style("background-color", "rgba(25, 25, 40, 0.9)")
+    .style("color", "#fff")
+    .style("padding", "8px")
+    .style("border-radius", "4px")
+    .style("font-size", "12px")
+    .style("pointer-events", "none")
+    .style("border", "1px solid #4CAF50");
+
+  function getSeason(date) {
+    const month = date.getMonth();
+    if (month >= 2 && month <= 4) return "Spring";
+    if (month >= 5 && month <= 7) return "Summer";
+    if (month >= 8 && month <= 10) return "Fall";
+    return "Winter";
+  }
+
+  function updateChart() {
+    const selectedShape = d3.select("#season-shape-filter").node().value;
+    const selectedCountry = d3.select("#season-country-filter").node().value;
+
+    // Filter data
+    let filteredData = data;
+    if (selectedShape !== "All Shapes") {
+      filteredData = filteredData.filter(d => d.UFO_shape === selectedShape);
+    }
+    if (selectedCountry !== "All Countries") {
+      filteredData = filteredData.filter(d => d.Country_Code === selectedCountry);
+    }
+
+    // Count by season
+    const seasonCounts = d3.rollup(
+      filteredData,
+      v => v.length,
+      d => getSeason(d.Date_time)
+    );
+
+    // Convert to array and sort by season order
+    const seasons = ["Winter", "Spring", "Summer", "Fall"];
+    const seasonData = seasons.map(season => ({
+      season: season,
+      count: seasonCounts.get(season) || 0
+    }));
+
+    // Update scales
+    const x = d3.scaleBand()
+      .range([0, width])
+      .domain(seasons)
+      .padding(0.1);
+
+    const y = d3.scaleLinear()
+      .domain([0, d3.max(seasonData, d => d.count)])
+      .range([height, 0]);
+
+    // Update/create bars
+    const bars = svg.selectAll(".bar")
+      .data(seasonData);
+
+    // Remove old bars
+    bars.exit().remove();
+
+    // Update existing bars
+    bars.transition()
+      .duration(750)
+      .attr("x", d => x(d.season))
+      .attr("y", d => y(d.count))
+      .attr("width", x.bandwidth())
+      .attr("height", d => height - y(d.count));
+
+    // Add new bars
+    bars.enter()
+      .append("rect")
+      .attr("class", "bar")
+      .attr("fill", "#4CAF50")
+      .attr("x", d => x(d.season))
+      .attr("y", d => y(d.count))
+      .attr("width", x.bandwidth())
+      .attr("height", d => height - y(d.count))
+      .attr("opacity", 0.8)
+      .on("mouseover", (event, d) => {
+        d3.select(event.currentTarget)
+          .attr("opacity", 1);
+
+        tooltip.transition()
+          .duration(200)
+          .style("opacity", 0.9);
+
+        tooltip.html(`Season: ${d.season}<br>Sightings: ${d.count}`)
+          .style("left", event.pageX + 10 + "px")
+          .style("top", event.pageY - 28 + "px");
+      })
+      .on("mouseout", (event) => {
+        d3.select(event.currentTarget)
+          .attr("opacity", 0.8);
+
+        tooltip.transition()
+          .duration(500)
+          .style("opacity", 0);
+      });
+
+    // Update axes
+    svg.selectAll(".x-axis").remove();
+    svg.selectAll(".y-axis").remove();
+
+    svg.append("g")
+      .attr("class", "x-axis")
+      .attr("transform", `translate(0,${height})`)
+      .call(d3.axisBottom(x));
+
+    svg.append("g")
+      .attr("class", "y-axis")
+      .call(d3.axisLeft(y));
+  }
+
+  // Initial render
+  updateChart();
 }
 
 // function createShapeChart(data) {
